@@ -1,0 +1,28 @@
+cyrenit - a minimalist init system and supervisor
+=================================================
+
+cyrenit is a small experimental init program written in C. It provides a
+tiny and simple process supervisor to start a set of services. It intends
+to provide the basic infrastructure for an init (PID 1) program and have
+a simple foundation for exploring post-boot semantics for the linux kernel.
+
+
+WARNING: This is not intended for production, and this project is more of
+a playground for exerimenting with init design and service launching,
+signal handling, etc. It runs on a constrained initcpio image for now.
+
+Building:
+    run "make"
+
+Running under QEMU:
+    run "make run"
+
+Installing into an initramfs:
+    the Makefile will generate a minimal cpio archive containing ./init
+
+License:
+    This project is licensed under the GNU GPL version 3 or later.
+    See the LICENSE file for more information.
+
+Author:
+    Ágatha Isabelle Moreira Guedes <code@agatha.dev>
