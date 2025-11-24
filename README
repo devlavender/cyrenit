@@ -11,18 +11,33 @@ WARNING: This is not intended for production, and this project is more of
 a playground for exerimenting with init design and service launching,
 signal handling, etc. It runs on a constrained initcpio image for now.
 
-Building:
-    run "make"
+REQUIREMENTS
+To build cyrenit the requirements are:
+- GNU make
+- A C compiler (tested on gcc)
+- A linker (tested on ld)
+- cpio
+- bash
 
-Running under QEMU:
-    run "make run"
+To run cyrenit you will need:
+- QEMU
+- A kernel at your host's /boot/vmlinuz-linux (you can change the path on
+the Makefile)
 
-Installing into an initramfs:
-    the Makefile will generate a minimal cpio archive containing ./init
+BUILDING
+To build cyrenit run:
+$ make
 
-License:
-    This project is licensed under the GNU GPL version 3 or later.
-    See the LICENSE file for more information.
+To build the initcpio run:
+$ make initcpio
 
-Author:
-    Ágatha Isabelle Moreira Guedes <code@agatha.dev>
+RUNNING
+To run cyrenit, use the command:
+$ make run
+
+LICENSE
+This project is licensed under the GNU GPL version 3 or later.
+See the LICENSE file for more information.
+
+AUTHOR
+Ágatha Isabelle Moreira Guedes <code@agatha.dev>
