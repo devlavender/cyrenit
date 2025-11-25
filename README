@@ -16,13 +16,21 @@ To build cyrenit the requirements are:
 - GNU make
 - A C compiler (tested on gcc)
 - A linker (tested on ld)
+- bash
+
+To build an initcpio image you will need:
 - cpio
 - bash
+- tools: ls, find, mount, umount, df, cp, mv, rm, dmesg, touch, cat,
+  tail, ln, ps and kill (you'll likely have it, but might remove them
+  from the Makefile IMAGE_BINS list as well if you don't have and don't
+  want them)
+- 
 
 To run cyrenit you will need:
 - QEMU
 - A kernel at your host's /boot/vmlinuz-linux (you can change the path on
-the Makefile)
+  the Makefile)
 
 BUILDING
 To build cyrenit run:
