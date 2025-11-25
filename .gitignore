@@ -2,3 +2,4 @@ build/
 cyrenit
 *.o
 *.cpio
+services/helloop
