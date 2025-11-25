@@ -43,6 +43,19 @@ RUNNING
 To run cyrenit, use the command:
 $ make run
 
+DEBUGGING
+To build cyrenit with debug symbols, use `DEBUG=1` argument to `make`.
+You can debug the CLI mode just running it regularly with `gdb`.
+
+To debug it on PID1 mode, build it with debug symbols and then add the
+`DEBUG=1` argument to `make run` as well. Qemu will then start and listen
+on port 1234 so you can connect to it using gdb command:
+
+`target remote :1234`
+
+Then you start the execution with `continue`, although I'd recommend to
+add some breakpoints before (i.e. `main`).
+
 LICENSE
 This project is licensed under the GNU GPL version 3 or later.
 See the LICENSE file for more information.
