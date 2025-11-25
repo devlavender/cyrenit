@@ -41,7 +41,7 @@ scan_bin(){
         return 0
 }
 
-for bin in "$INITROOT"/etc/cyrenit/services/l0/*; do
+for bin in "$INITROOT"/etc/cyrenit/services/l0/* "$INITROOT"/lib/* "$INITROOT"/bin/*; do
         scan_bin "$bin"
 done
 
