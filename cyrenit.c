@@ -27,11 +27,13 @@
 #include "cyrenit.h"
 #include "cyrecli.h"
 #include "mounts.h"
+#include "proc.h"
 
 void dump_char_array(char **arr);
 int main_loop(int argc, char **argv, char **envp);
 int bootstrap(int argc, char **argv, char **envp);
 int exec_fg(int argc, char **argv, char **envp);
+int start_services();
 
 int main(int argc, char **argv, char **envp)
 {
@@ -134,6 +136,7 @@ int bootstrap(int argc, char **argv, char **envp)
         };
         struct mount_task **mt_ptr = mount_list;
         int env_ret = 0;
+        int svc_ret = 0;
 
         fprintf(stdout, "cyrenit: starting bootstrap process...\n");
         fprintf(stdout, "cyrenit: dumping argv\n");
@@ -166,6 +169,12 @@ int bootstrap(int argc, char **argv, char **envp)
                 perror("cyrenit: oops, error setting PATH: ");
         }
 
+        fprintf(stdout, "cyrenit[%d]: starting services\n", getpid());
+        svc_ret = start_services();
+        fprintf(stdout, "cyrenit[%d]: started %d services successfully\n",
+                getpid(), svc_ret);
+
+
         return EXIT_SUCCESS;
 }
 
@@ -177,12 +186,75 @@ int main_loop(int argc, char **argv, char **envp)
 
         fprintf(stdout, "cyrenit: reaching main loop!\n");
         while (1){
-                fprintf(stdout, "cyrenit: starting /bin/bash");
+                fprintf(stdout, "cyrenit: starting /bin/bash\n");
                 ret = exec_fg(bashc, bash_cmd, environ);
                 fprintf(stdout, "cyrenit: /bin/bash returned with status %d", ret);
                 sleep(5);
         }
         return EXIT_SUCCESS;
+}
+
+int start_services()
+{
+        char *svc_paths[] = {
+                "/etc/cyrenit/services/l0/helloop",
+                NULL
+        };
+        const char *start_args[] = {"start", NULL};
+        char **svc_ptr = svc_paths;
+        struct process *svc_proc = NULL;
+        int ret = 0;
+
+        while (svc_ptr && *svc_ptr) {
+                fprintf(stdout, "cyrenit: starting service %s\n", *svc_ptr);
+
+                svc_proc = process_create();
+                if (svc_proc == NULL) {
+                        fprintf(stderr, "cyrenit: failed to create process for %s\n", *svc_ptr);
+                        svc_ptr++;
+                        continue;
+                }
+
+                if (!process_set_image(svc_proc, *svc_ptr)) {
+                        fprintf(stderr, "cyrenit: failed to set image for %s\n", *svc_ptr);
+                        process_destroy(svc_proc);
+                        svc_ptr++;
+                        continue;
+                }
+
+                if (!process_set_args(svc_proc, start_args)) {
+                        fprintf(stderr, "cyrenit: failed to set args for %s\n", *svc_ptr);
+                        process_destroy(svc_proc);
+                        svc_ptr++;
+                        continue;
+                }
+
+                if (!process_set_envdynamic(svc_proc)) {
+                        fprintf(stderr, "cyrenit: failed to set dynamic env for %s\n", *svc_ptr);
+                        process_destroy(svc_proc);
+                        svc_ptr++;
+                        continue;
+                }
+
+                if (!register_process(svc_proc)) {
+                        fprintf(stderr, "cyrenit: failed to register process for %s\n", *svc_ptr);
+                        process_destroy(svc_proc);
+                        svc_ptr++;
+                        continue;
+                }
+
+                if (!process_forkexec(svc_proc)) {
+                        fprintf(stderr, "cyrenit: failed to forkexec service %s\n", *svc_ptr);
+                        process_destroy(svc_proc);
+                        svc_ptr++;
+                        continue;
+                }
+
+                ret++;
+                svc_ptr++;
+        }
+
+        return ret;
 }
 
 int exec_fg(int argc, char **argv, char **envp) {
@@ -198,7 +270,6 @@ int exec_fg(int argc, char **argv, char **envp) {
                 perror("cyrenit: error forking process!");
                 return EXIT_FAILURE;
         }
-
         if (ret == 0) {
                 exec_ret = execve(argv[0], argv, environ);
                 if (exec_ret == -1) {

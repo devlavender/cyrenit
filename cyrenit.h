@@ -13,6 +13,11 @@
 #ifndef __CYREINIT_H
 #define __CYREINIT_H
 
+#include <stddef.h>
+#include <stdbool.h>
+
+#include "proc.h"
+
 #define STRCMP_EQUAL 0
 #define INIT_PID 1
 #define INIT_CMD "init"
