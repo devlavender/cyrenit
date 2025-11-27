@@ -21,6 +21,9 @@
 #include <linux/limits.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <asm/termbits.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 
 #include <libgen.h>
 
@@ -28,6 +31,9 @@
 #include "cyrecli.h"
 #include "mounts.h"
 #include "proc.h"
+
+int console_fd = -1;
+pid_t console_pid = -1;
 
 void dump_char_array(char **arr);
 int main_loop(int argc, char **argv, char **envp);
@@ -174,6 +180,15 @@ int bootstrap(int argc, char **argv, char **envp)
         fprintf(stdout, "cyrenit[%d]: started %d services successfully\n",
                 getpid(), svc_ret);
 
+        fprintf(stdout, "cyrenit[%d]: opening console\n", getpid());
+        console_fd = open("/dev/console", O_RDWR);
+        if (console_fd == -1) {
+                perror("cyrenit: failed to open /dev/console: ");
+        }
+        else {
+                fprintf(stdout, "cyrenit[%d]: /dev/console opened with fd %d\n",
+                        getpid(), console_fd);
+        }
 
         return EXIT_SUCCESS;
 }
@@ -261,6 +276,10 @@ int exec_fg(int argc, char **argv, char **envp) {
         pid_t ret;
         int exec_ret = 0;
         int status;
+        int ioctl_ret = 0;
+        int dup_stdin = 0;
+        int dup_stdout = 0;
+        int dup_stderr = 0;
 
         fprintf(stdout, "cyrenit: starting %s\n",
                 argv[0]);
@@ -271,6 +290,21 @@ int exec_fg(int argc, char **argv, char **envp) {
                 return EXIT_FAILURE;
         }
         if (ret == 0) {
+                console_pid = setsid();
+                ioctl_ret = ioctl(console_fd, TIOCSCTTY,0);
+                fprintf(stdout, "cyrenit[%d]: passing terminal control from"
+                        "pid %d to pid %d, ioctl ret %d\n", getpid(),
+                        console_pid, getpid(), ioctl_ret);
+                dup_stdin = dup2(console_fd, STDIN_FILENO);
+                dup_stdout = dup2(console_fd, STDOUT_FILENO);
+                dup_stderr = dup2(console_fd, STDERR_FILENO);
+                if (console_pid > 2) {
+                        close(console_pid);
+                }
+                fprintf(stdout, "cyrenit: duplicated console fd %d to "
+                        "stdin %d, stdout %d, stderr %d\n",
+                        console_fd, dup_stdin, dup_stdout, dup_stderr);
+                
                 exec_ret = execve(argv[0], argv, environ);
                 if (exec_ret == -1) {
                         perror("cyrenit: error executing process:");

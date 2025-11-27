@@ -23,6 +23,9 @@
 #define INIT_CMD "init"
 #define CYRENIT_CLI_NAME "cyrenit"
 
+extern int console_fd;
+extern pid_t console_pid;
+
 bool check_pid_one_semantics(const char *cmd);
 bool check_command(const char *cmd, const char *check);
 bool check_pid(const pid_t check);
