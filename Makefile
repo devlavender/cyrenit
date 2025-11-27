@@ -24,7 +24,7 @@ DEFINES := -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE
 CC      := cc
 CFLAGS_REG  := -O2 
 CFLAGS_DEBUG  := -g3 -O0 -fno-omit-frame-pointer -Wall -Wextra
-CFLAGS_COMMON := -static -std=c11 -Wall -Wextra $(DEFINES)
+CFLAGS_COMMON := -std=c11 -Wall -Wextra $(DEFINES)
 LDFLAGS_REG :=
 LDFLAGS_DEBUG :=
 
@@ -65,13 +65,16 @@ TARGET_IMAGE := initrd.cpio
 CYRENIT_BIN := $(CYRENIT_DEST_DIR)/cyrenit
 INIT_BIN := $(IMAGE_BUILD_DIR)$(CYRENIT_DEST_DIR)/init
 IMAGE_BINS := bash ls find mount umount df cp mv rm dmesg mkdir \
-	touch cat tail ln ps kill
+	touch cat tail ln ps kill ldd pstree
+IMAGE_DATA := /usr/share/terminfo 
 IMAGE_LIBS := libgcc_s.so.1
 LIBDIR_SYMLINKS := /usr/lib /lib64 /usr/lib64
 ROOT_DIRS := {sbin,bin,boot,var,lib,etc,proc,sys,dev,mnt,run,usr,tmp}
+USR_DIRS := {share,libexec}
 
 initcpio: all scan-libs.sh
 	mkdir -p $(IMAGE_BUILD_DIR)/$(ROOT_DIRS)
+	mkdir -p $(IMAGE_BUILD_DIR)/usr/$(USR_DIRS)
 	for dir in $(LIBDIR_SYMLINKS); do \
 		ln -s /lib $(IMAGE_BUILD_DIR)/$$dir ; \
 	done
@@ -94,6 +97,11 @@ initcpio: all scan-libs.sh
 		test -a /lib/$$lib && install /lib/$$lib $(IMAGE_BUILD_DIR)/lib/; \
 		continue; \
 	done
+	for data in $(IMAGE_DATA); do \
+		(test -d $$data || test -f $$data) && \
+			cp -a $$data $(IMAGE_BUILD_DIR)/$$(dirname $$data); \
+		continue; \
+	done
 
 	bash scan-libs.sh $(IMAGE_BUILD_DIR) $(SERVICES_DIR)
 
@@ -105,7 +113,9 @@ $(TARGET_IMAGE): initcpio
 KERNEL_CMD_CONSOLE := console=ttyS0
 KERNEL_CMD_INIT := init=$(CYRENIT_DEST_DIR)/init rdinit=$(CYRENIT_DEST_DIR)/init
 KERNEL_CMD_ROOT := root=
+ifeq ($(DEBUG),1)
 KERNEL_CMD_DEBUG := debug
+endif
 KERNEL_CMDLINE := $(KERNEL_CMD_CONSOLE) $(KERNEL_CMD_INIT) $(KERNEL_CMD_ROOT) $(KERNEL_CMD_DEBUG)
 
 QEMU_CONSOLE_OPTS := -display none -serial stdio
