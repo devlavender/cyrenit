@@ -45,7 +45,7 @@ int main(int argc, char **argv, char **envp)
 {
         char *cmdline = *argv;
 
-        fprintf(stdout, "cyrenit: game on! \n");
+        fprintf(stdout, "cyrenit[%d]: game on! \n", getpid());
         fprintf(stderr, "cyrenit: testing writing to stdout and stderr\n");
 
         if (check_command(cmdline, CYRENIT_CLI_NAME)) {
@@ -150,7 +150,7 @@ int bootstrap(int argc, char **argv, char **envp)
         fprintf(stdout, "cyrenit: dumping envp\n");
         dump_char_array(envp);
 
-        fprintf(stdout, "cyrenit: creating mount tasks\n");
+        fprintf(stdout, "cyrenit[%d]: creating mount tasks\n", getpid());
         while (mt_ptr && *mt_ptr) {
                 if (!add_mount_task(*mt_ptr)) {
                         fprintf(stderr, "cyrenit: failed to add mount "
@@ -172,7 +172,12 @@ int bootstrap(int argc, char **argv, char **envp)
         fprintf(stdout, "cyrenit: creating basic environment\n");
         env_ret = setenv("PATH", "/bin:/sbin", 0);
         if (env_ret != 0) {
-                perror("cyrenit: oops, error setting PATH: ");
+                fprintf(stderr, "cyrenit[%d]: ", getpid());
+                perror("oops, error setting PATH: ");
+        }
+        else {
+                fprintf(stdout, "cyrenit[%d]: set PATH successfully\n",
+                        getpid());
         }
 
         fprintf(stdout, "cyrenit[%d]: starting services\n", getpid());
@@ -281,12 +286,13 @@ int exec_fg(int argc, char **argv, char **envp) {
         int dup_stdout = 0;
         int dup_stderr = 0;
 
-        fprintf(stdout, "cyrenit: starting %s\n",
-                argv[0]);
+        fprintf(stdout, "cyrenit[%d]: starting %s\n",
+                getpid(), argv[0]);
         
         ret = fork();
         if (ret == -1) {
-                perror("cyrenit: error forking process!");
+                fprintf(stderr, "cyrenit[%d]: ", getpid());
+                perror("error forking process!");
                 return EXIT_FAILURE;
         }
         if (ret == 0) {
@@ -311,6 +317,8 @@ int exec_fg(int argc, char **argv, char **envp) {
                 }
         }
         else {
+                fprintf(stdout, "cyrenit[%d]: waiting for pid %d to finish\n",
+                        getpid(), ret);
                 if (waitpid(ret, &status, 0) == EXIT_FAILURE) {
                         perror("cyrenit: error waiting for pid:");
                 }
