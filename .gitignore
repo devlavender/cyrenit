@@ -3,3 +3,4 @@ cyrenit
 *.o
 *.cpio
 services/helloop
+services/zombie-party
