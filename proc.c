@@ -390,10 +390,8 @@ bool process_forkexec(struct process *proc)
                 return -1; //fork error
         }
 
-        sleep(1);
         fprintf(stdout, "cyrenit[%d]: forked process %d for %s\n",
                 getpid(), pid, proc->exec_image);
-        sleep(1);
         
         if (pid == FORK_ISCHILD) {
                 fprintf(stdout, "cyrenit[%d]: entering the children\n",
@@ -412,7 +410,7 @@ bool process_forkexec(struct process *proc)
                 }
 
                 fprintf(stdout, "cyrenit[%d]: ready for execve of %s"
-                        "with %zu args and %zu env vars\n",
+                        " with %zu args and %zu env vars\n",
                         getpid(), proc->exec_image,
                         proc->arg_counter, proc->env_counter);
 
