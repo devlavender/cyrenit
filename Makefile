@@ -65,7 +65,7 @@ TARGET_IMAGE := initrd.cpio
 CYRENIT_BIN := $(CYRENIT_DEST_DIR)/cyrenit
 INIT_BIN := $(IMAGE_BUILD_DIR)$(CYRENIT_DEST_DIR)/init
 IMAGE_BINS := bash ls find mount umount df cp mv rm dmesg mkdir \
-	touch cat tail ln ps kill ldd pstree
+	touch cat tail ln ps kill ldd pstree grep sed awk free
 IMAGE_DATA := /usr/share/terminfo 
 IMAGE_LIBS := libgcc_s.so.1
 LIBDIR_SYMLINKS := /usr/lib /lib64 /usr/lib64
