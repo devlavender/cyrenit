@@ -13,11 +13,12 @@
 #ifndef __HELLOOP_C
 #define __HELLOOP_C
 
-#define LOOP_INTERVAL_TIME 10
-#define LOOP_ITERATIONS 3
-
 #include <stdio.h>
 #include <unistd.h>
+#include <limits.h>
+
+#define LOOP_INTERVAL_TIME 30
+#define LOOP_ITERATIONS INT_MAX
 
 int main(int argc, char **argv, char **envp)
 {
@@ -30,12 +31,13 @@ int main(int argc, char **argv, char **envp)
         ptr = envp;
         ptr++;
 
-        while (counter++ < LOOP_ITERATIONS) {
-                ret = printf("helloop service iteration %d "
-                        "(of %d, %d interval)\n", counter,
+        while (1) {
+                ret = printf("helloop[%d]: service iteration %d "
+                        "(of %d, %d interval)\n", getpid(), ++counter,
                         LOOP_ITERATIONS, LOOP_INTERVAL_TIME);
                 if (ret < 0) {
-                        fprintf(stderr, "helloop: error writing to stdout\n");
+                        fprintf(stderr, "helloop[%d]: ", getpid());
+                        perror("error writing to stdout: ");
                         return ret;
                 }
                 ret = (int) sleep(LOOP_INTERVAL_TIME);
@@ -44,6 +46,7 @@ int main(int argc, char **argv, char **envp)
                                 "while sleeping for %d time, %d remaining "
                                 "(likely we received a signal)",
                                 LOOP_INTERVAL_TIME, ret);
+                        sleep(ret);
                 }
         }
 
