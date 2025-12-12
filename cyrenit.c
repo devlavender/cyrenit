@@ -38,13 +38,16 @@ pid_t console_pid = -1;
 void dump_char_array(char **arr);
 int main_loop(int argc, char **argv, char **envp);
 int bootstrap(int argc, char **argv, char **envp);
-int exec_fg(int argc, char **argv, char **envp);
+int start_shell(int argc, char **argv, char **envp);
 int start_services();
 
 int main(int argc, char **argv, char **envp)
 {
         char *cmdline = *argv;
 
+        fprintf(stdout, "cyrenit - (C) 2025 Ágatha Isabelle Moreira\n"
+                "Dedicated to the love of my life, "
+                "Mariana Carla Rodrigues\n");
         fprintf(stdout, "cyrenit[%d]: game on! \n", getpid());
         fprintf(stderr, "cyrenit: testing writing to stdout and stderr\n");
 
@@ -125,7 +128,7 @@ void dump_char_array(char **arr)
         }
 }
 
-int bootstrap(int argc, char **argv, char **envp)
+int bootstrap([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         struct mount_task *mount_list[] = {
                 mount_task_create_ready("proc", "/proc", "proc",
@@ -198,7 +201,7 @@ int bootstrap(int argc, char **argv, char **envp)
         return EXIT_SUCCESS;
 }
 
-int main_loop(int argc, char **argv, char **envp)
+int main_loop([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         int ret = 0;
         char *bash_cmd[] = {"/bin/bash", NULL };
@@ -207,7 +210,7 @@ int main_loop(int argc, char **argv, char **envp)
         fprintf(stdout, "cyrenit: reaching main loop!\n");
         while (1){
                 fprintf(stdout, "cyrenit: starting /bin/bash\n");
-                ret = exec_fg(bashc, bash_cmd, environ);
+                ret = start_shell(bashc, bash_cmd, environ);
                 fprintf(stdout, "cyrenit: /bin/bash returned with status %d", ret);
                 sleep(5);
         }
@@ -218,6 +221,8 @@ int start_services()
 {
         char *svc_paths[] = {
                 "/etc/cyrenit/services/l0/helloop",
+                "/etc/cyrenit/services/l0/zombie-party",
+                "/etc/cyrenit/services/l0/orphan-party",
                 NULL
         };
         const char *start_args[] = {"start", NULL};
@@ -277,8 +282,8 @@ int start_services()
         return ret;
 }
 
-int exec_fg(int argc, char **argv, char **envp) {
-        pid_t ret;
+int start_shell([[maybe_unused]] int argc, char **argv, [[maybe_unused]] char **envp) {
+        pid_t ret = 0;
         int exec_ret = 0;
         int status;
         int ioctl_ret = 0;

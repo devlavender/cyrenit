@@ -8,13 +8,13 @@
  * This file is part of Cyrenit. It is licensed under the GNU GPL, version 3 or
  * any later version. See the LICENSE file accompanying this project for full
  * details.
- */
+**/
 
- /**
+/**
   * This service creates zombie processes to test the init system's
   * process reaper. It produces a new zombie process every 30 seconds,
   * forever.
-  */
+**/
 
 #ifndef __ZOMBIEPARTY_C
 #define __ZOMBIEPARTY_C
@@ -28,7 +28,7 @@
 
 #define ZOMBIE_INTERVAL 30
 
-int main(int argc, char **argv, char **envp)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         pid_t ret;
         int sleep_ret = 0;

@@ -34,7 +34,7 @@
 
 int create_orphan();
 
-int main(int argc, char **argv, char **envp)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         pid_t fork_ret = -2;
         pid_t waitpid_ret = -2;
@@ -89,6 +89,15 @@ int main(int argc, char **argv, char **envp)
                 fprintf(stdout, "orphan-party[%d]: sleeping for %d seconds"
                         "before creating next orphan\n", getpid(), ORPHAN_INTERVAL);
                 sleep_ret = sleep(ORPHAN_INTERVAL);
+                while (sleep_ret > 0) {
+                        fprintf(stderr, "orphan-party[%d]: nap interrupted "
+                                "with %d seconds remaining\n",
+                                getpid(), sleep_ret);
+                        sleep_ret = sleep(sleep_ret);
+                }
+                fprintf(stdout, "orphan-party[%d]: woke up from its nap "
+                                "ready to create more orphans\n",
+                                getpid());
         }
 
 }

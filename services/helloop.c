@@ -20,16 +20,10 @@
 #define LOOP_INTERVAL_TIME 30
 #define LOOP_ITERATIONS INT_MAX
 
-int main(int argc, char **argv, char **envp)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         int counter = 0;
         int ret;
-        char **ptr = NULL;
-
-        ptr = argv;
-        ret = argc;
-        ptr = envp;
-        ptr++;
 
         while (1) {
                 ret = printf("helloop[%d]: service iteration %d "

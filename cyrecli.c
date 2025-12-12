@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int cli_mode_main(int argc, char **argv, char **envp)
+int cli_mode_main([[maybe_unused]] int argc, [[maybe_unused]] char **argv, [[maybe_unused]] char **envp)
 {
         fprintf(stderr, "CLI mode not implemented yet\n");
         return EXIT_FAILURE;
