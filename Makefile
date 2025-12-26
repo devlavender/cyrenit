@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-	
+
 # cyrenit - Minimal init system for experimental initramfs environments
 # Copyright (C) 2025  Ágatha Isabelle Moreira Guedes <code@agatha.dev>
 #
@@ -19,21 +19,10 @@
 # A copy of the license is also provided in the file named LICENSE
 # distributed with the source code.
 
-# Compiler and flags
-DEFINES := -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE
-CC      := cc
-CFLAGS_REG  := -O2 
-CFLAGS_DEBUG  := -g3 -O0 -fno-omit-frame-pointer -Wall -Wextra
-CFLAGS_COMMON := -std=c11 -Wall -Wextra $(DEFINES)
-LDFLAGS_REG :=
-LDFLAGS_DEBUG :=
-
-ifeq ($(DEBUG),1)
-CFLAGS := $(CFLAGS_COMMON) $(CFLAGS_DEBUG)
-LDFLAGS := $(LDFLAGS_DEBUG)
+# Gets ./configure output -- mandatory
+ifeq ($(MAKE_COMMON_INCLUDED),yes)
 else
-CFLAGS := $(CFLAGS_COMMON) $(CFLAGS_REG)
-LDFLAGS := $(LDFLAGS_REG)
+include common.mk
 endif
 
 # Kernel image for initcpio
@@ -49,16 +38,32 @@ CONFIG_DIR := /etc/cyrenit
 SERVICES_DEST_DIR := $(CONFIG_DIR)/services/l0
 CYRENIT_DEST_DIR := /sbin
 
-all: cyrenit services
+CYRENIT_CPPFLAGS := 
+CYRENIT_CFLAGS := 
+
+CYRENIT_LIBS := libcyrenit_logger.a
+LIBS := $(CYRENIT_LIBS)
+LIB_DIR := lib/
+
+CPPFLAGS := $(CPPFLAGS_COMMON) $(CYRENIT_CPPFLAGS)
+CFLAGS := $(CFLAGS_COMMON) $(CYRENIT_CFLAGS)
+
+MAKE_VARS := $(MAKE_VARS_COMMON)
+
+all: cyrenit services lib
 
 cyrenit: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o cyrenit $(LDFLAGS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 services:
-	$(MAKE) -C $(SERVICES_DIR)
+	@echo "Passing make vars: $(MAKE_VARS)"
+	$(MAKE) -C $(SERVICES_DIR) $(MAKE_VARS)
+
+lib:
+	$(MAKE) -C lib/ $(MAKE_VARS)
 
 IMAGE_BUILD_DIR := build/initcpio
 TARGET_IMAGE := initrd.cpio
@@ -66,7 +71,7 @@ CYRENIT_BIN := $(CYRENIT_DEST_DIR)/cyrenit
 INIT_BIN := $(IMAGE_BUILD_DIR)$(CYRENIT_DEST_DIR)/init
 IMAGE_BINS := bash ls find mount umount df cp mv rm dmesg mkdir \
 	touch cat tail ln ps kill ldd pstree grep sed awk free
-IMAGE_DATA := /usr/share/terminfo 
+IMAGE_DATA := /usr/share/terminfo
 IMAGE_LIBS := libgcc_s.so.1
 LIBDIR_SYMLINKS := /usr/lib /lib64 /usr/lib64
 ROOT_DIRS := {sbin,bin,boot,var,lib,etc,proc,sys,dev,mnt,run,usr,tmp}
@@ -113,15 +118,29 @@ $(TARGET_IMAGE): initcpio
 KERNEL_CMD_CONSOLE := console=ttyS0
 KERNEL_CMD_INIT := init=$(CYRENIT_DEST_DIR)/init rdinit=$(CYRENIT_DEST_DIR)/init
 KERNEL_CMD_ROOT := root=
-ifeq ($(DEBUG),1)
-KERNEL_CMD_DEBUG := debug
+
+ifeq ($(KERN_CONS),1)
+
+ifndef LOGLEVEL
+LOGLEVEL := 7
 endif
+
+KERNEL_CMD_DEBUG := debug loglevel=$(LOGLEVEL)
+else
+
+ifndef LOGLEVEL
+LOGLEVEL := 3
+endif
+
+KERNEL_CMD_DEBUG := quiet loglevel=$(LOGLEVEL)
+endif
+
 KERNEL_CMDLINE := $(KERNEL_CMD_CONSOLE) $(KERNEL_CMD_INIT) $(KERNEL_CMD_ROOT) $(KERNEL_CMD_DEBUG)
 
 QEMU_CONSOLE_OPTS := -display none -serial stdio
 QEMU_OPTS_DEBUG := -s -S
 QEMU_OPTS_REG :=
-ifeq ($(DEBUG),1)
+ifeq ($(QEMU_DEBUG),1)
 QEMU_OPTS := $(QEMU_OPTS_DEBUG)
 else
 QEMU_OPTS := $(QEMU_OPTS_REG)
@@ -137,6 +156,12 @@ run: $(TARGET_IMAGE)
 clean:
 	rm -f cyrenit *.o
 	rm -rf build
-	$(MAKE) -C $(SERVICES_DIR) clean
+	rm -rf $(TARGET_IMAGE)
+	$(MAKE) -C $(SERVICES_DIR) $(MAKE_VARS) clean
+	$(MAKE) -C $(LIB_DIR) $(MAKE_VARS) clean
+
+dist-clean: clean
+	rm -rf config.mk config.h config.h.in configure config.log \
+		config.status autom4te.cache configure~ config.h.in~ \
 
 .PHONY: all services initcpio clean run

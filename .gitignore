@@ -5,3 +5,13 @@ cyrenit
 services/helloop
 services/zombie-party
 services/orphan-party
+config.h.in
+config.h.in~
+config.h
+configure
+config.mk
+.vscode/
+autom4te.cache/
+configure~
+config.log
+config.status

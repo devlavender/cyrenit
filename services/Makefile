@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-	
+
 # cyrenit - Minimal init system for experimental initramfs environments
 # Copyright (C) 2025  Ágatha Isabelle Moreira Guedes <code@agatha.dev>
 #
@@ -19,17 +19,19 @@
 # A copy of the license is also provided in the file named LICENSE
 # distributed with the source code.
 
-CC      := gcc
-CFLAGS  := -O2 -Wall -Wextra -std=c99
-LDFLAGS :=
+include $(TOPDIR)/common.mk
 
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:.c=)
+ENABLED_BINS := 
+
+CFLAGS := $(CFLAGS_COMMON)
+CPPFLAGS := $(CPPFLAGS_COMMON)
 
 all: $(BINS)
 
 %: %.c
-	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ $(LDFLAGS)
 
 clean:
 	rm -f $(BINS)
