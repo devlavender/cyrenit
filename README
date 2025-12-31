@@ -11,7 +11,7 @@ WARNING: This is not intended for production, and this project is more of
 a playground for exerimenting with init design and service launching,
 signal handling, etc. It runs on a constrained initcpio image for now.
 
-REQUIREMENTS
+1. REQUIREMENTS
 To build cyrenit the requirements are:
 - GNU make
 - A C compiler (tested on gcc)
@@ -25,40 +25,67 @@ To build an initcpio image you will need:
   tail, ln, ps and kill (you'll likely have it, but might remove them
   from the Makefile IMAGE_BINS list as well if you don't have and don't
   want them)
-- 
 
 To run cyrenit you will need:
 - QEMU
 - A kernel at your host's /boot/vmlinuz-linux (you can change the path on
   the Makefile)
 
-BUILDING
+2. BUILDING
+If you hadn't generated autoconf, run:
 To build cyrenit run:
+$ ./configure
 $ make
 
 To build the initcpio run:
 $ make initcpio
 
-RUNNING
+2.1 Config Flags
+The `./configure` script can be built with several optional flags. Those
+flags will set the value of config variables, named following the
+pattern `CONFIG_VARNAME`, while the flags are named `--enable-this`,
+`--disable-that`, `--with-this=value`, etc, pretty standard autoconf
+ways.
+
+2.2 Make Vars
+Some make variables (passed as `VAR=value` to `make`) control some
+behaviors of the building and running process. They will often be
+toggle variables, meaning, if you set them to 1 you enable them,
+otherwise they are disabled.
+
+For `make run`, the following variables are relevant:
+ KERN_CONS - when set to 1, enables a kernel console more verbose output
+ by passing `debug` to the kernel cmdline. When not set ot set to other
+ value, it passes `quiet` to the kernel cmdline making kernel only output
+ errors and warnings.
+
+ LOGLEVEL - Sets the kernel loglevel, defaulting to 3, or to 7 if
+ KERN_CONS is set to 1.
+
+ QEMU_DEBUG - when set to 1, starts qemu on debug mode, waiting for gdb
+ to connect on port 1234.
+
+3. RUNNING
 To run cyrenit, use the command:
 $ make run
 
-DEBUGGING
-To build cyrenit with debug symbols, use `DEBUG=1` argument to `make`.
+4. DEBUGGING
+To build cyrenit with debug symbols, use `--enable-debug` argument to
+`./configure`.
 You can debug the CLI mode just running it regularly with `gdb`.
 
 To debug it on PID1 mode, build it with debug symbols and then add the
-`DEBUG=1` argument to `make run` as well. Qemu will then start and listen
-on port 1234 so you can connect to it using gdb command:
+`QEMU_DEBUG=1` argument to `make run` as well. Qemu will then start and
+listen on port 1234 so you can connect to it using gdb command:
 
 `target remote :1234`
 
 Then you start the execution with `continue`, although I'd recommend to
 add some breakpoints before (i.e. `main`).
 
-LICENSE
+5. LICENSE
 This project is licensed under the GNU GPL version 3 or later.
 See the LICENSE file for more information.
 
-AUTHOR
+6. AUTHOR
 Ágatha Isabelle Moreira Guedes <code@agatha.dev>
