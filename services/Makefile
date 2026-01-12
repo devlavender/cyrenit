@@ -22,13 +22,26 @@
 include $(TOPDIR)/common.mk
 
 SRCS := $(wildcard *.c)
-BINS := $(SRCS:.c=)
 ENABLED_BINS := 
 
+ifeq ($(CONFIG_SERVICE_HELLOOP),yes)
+ENABLED_BINS += helloop
+endif
+
+ifeq ($(CONFIG_SERVICE_ORPHAN_PARTY),yes)
+ENABLED_BINS += orphan-party
+endif
+
+ifeq ($(CONFIG_SERVICE_ZOMBIE_PARTY),yes)
+ENABLED_BINS += zombie-party
+endif
+
+BINS := $(ENABLED_BINS)
 CFLAGS := $(CFLAGS_COMMON)
 CPPFLAGS := $(CPPFLAGS_COMMON)
 
 all: $(BINS)
+	echo "Building services $(BINS)"
 
 %: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ $(LDFLAGS)

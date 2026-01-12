@@ -32,6 +32,24 @@ AC_ARG_ENABLE([debug],
         [CONFIG_DEBUG=yes],
         [CONFIG_DEBUG=no])
 
+AC_ARG_ENABLE([service-helloop],
+        [AS_HELP_STRING([--enable-service-helloop],
+                [Build with helloop service])],
+        [CONFIG_SERVICE_HELLOOP=yes],
+        [CONFIG_SERVICE_HELLOOP=no])
+
+AC_ARG_ENABLE([service-orphan-party],
+        [AS_HELP_STRING([--enable-service-orphan-party],
+                [Build with orphan-party service])],
+        [CONFIG_SERVICE_ORPHAN_PARTY=yes],
+        [CONFIG_SERVICE_ORPHAN_PARTY=no])
+
+AC_ARG_ENABLE([service-zombie-party],
+        [AS_HELP_STRING([--enable-service-zombie-party],
+                [Build with zombie-party service])],
+        [CONFIG_SERVICE_ZOMBIE_PARTY=yes],
+        [CONFIG_SERVICE_ZOMBIE_PARTY=no])
+
 AC_ARG_WITH([log-ring-size],
         [AS_HELP_STRING([--with-log-ring-size=SIZE],
                 [Set the size of the in-memory log ring buffer (default: 262144)])],
@@ -45,11 +63,23 @@ AC_ARG_WITH([log-ring-maxline],
         [CONFIG_LOG_RING_MAXLINE="120"])
 
 AC_SUBST(CONFIG_DEBUG)
+AC_SUBST(CONFIG_SERVICE_HELLOOP)
+AC_SUBST(CONFIG_SERVICE_ORPHAN_PARTY)
+AC_SUBST(CONFIG_SERVICE_ZOMBIE_PARTY)
 AC_SUBST(CONFIG_LOG_RING_SIZE)
 AC_SUBST(CONFIG_LOG_RING_MAXLINE)
 
 AS_IF([test "x$CONFIG_DEBUG" = "xyes"],
       [AC_DEFINE([CONFIG_DEBUG], [1], [Build with debug symbols and no optimizations])])
+
+AS_IF([test "x$CONFIG_SERVICE_HELLOOP" = "xyes"],
+      [AC_DEFINE([CONFIG_SERVICE_HELLOOP], [1], [Build with helloop service])])
+
+AS_IF([test "x$CONFIG_SERVICE_ORPHAN_PARTY" = "xyes"],
+      [AC_DEFINE([CONFIG_SERVICE_ORPHAN_PARTY], [1], [Build with orphan-party service])])
+
+AS_IF([test "x$CONFIG_SERVICE_ZOMBIE_PARTY" = "xyes"],
+      [AC_DEFINE([CONFIG_SERVICE_ZOMBIE_PARTY], [1], [Build with zombie-party service])])
 
 AS_IF([test "x$CONFIG_LOG_RING_SIZE" != "x"],
         [AC_DEFINE_UNQUOTED([CONFIG_LOG_RING_SIZE],
