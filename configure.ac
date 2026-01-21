@@ -52,9 +52,9 @@ AC_ARG_ENABLE([service-zombie-party],
 
 AC_ARG_WITH([log-ring-size],
         [AS_HELP_STRING([--with-log-ring-size=SIZE],
-                [Set the size of the in-memory log ring buffer (default: 262144)])],
+                [Set the size of the in-memory log ring buffer (default: 256K)])],
         [CONFIG_LOG_RING_SIZE="$withval"],
-        [CONFIG_LOG_RING_SIZE="262144"])
+        [CONFIG_LOG_RING_SIZE="256K"])
 
 AC_ARG_WITH([log-ring-maxline],
         [AS_HELP_STRING([--with-log-ring-maxline=SIZE],
@@ -82,9 +82,54 @@ AS_IF([test "x$CONFIG_SERVICE_ZOMBIE_PARTY" = "xyes"],
       [AC_DEFINE([CONFIG_SERVICE_ZOMBIE_PARTY], [1], [Build with zombie-party service])])
 
 AS_IF([test "x$CONFIG_LOG_RING_SIZE" != "x"],
-        [AC_DEFINE_UNQUOTED([CONFIG_LOG_RING_SIZE],
-                [$CONFIG_LOG_RING_SIZE],
-                [Size of the in-memory log ring buffer])])
+        [
+                lastchr=${CONFIG_LOG_RING_SIZE#${CONFIG_LOG_RING_SIZE%?}}
+                multiplier=1
+
+                AC_MSG_CHECKING([for log ring size multiplier in $CONFIG_LOG_RING_SIZE])
+
+                case "$lastchr" in
+                        K|k|M|m|G|g)
+                                AC_MSG_RESULT([found $lastchr])
+                                strip_last="yes"
+                        ;;
+                        0|1|2|3|4|5|6|7|8|9)
+                                AC_MSG_RESULT([not found])
+                                strip_last="no"
+                        ;;
+                        *)
+                                AC_MSG_ERROR([Log ring size multiplier invalid: $lastchr])
+                        ;;
+                esac
+
+                test "x$strip_last" = "xyes" && CONFIG_LOG_RING_SIZE=${CONFIG_LOG_RING_SIZE%?} &&
+                        AC_MSG_NOTICE([Log ring size number token: $CONFIG_LOG_RING_SIZE])
+
+                case "$lastchr" in
+                        K|k)
+                                multiplier=1024
+                        ;;
+                        M|m)
+                                multiplier=$((1024 * 1024))
+                        ;;
+                        G|g)
+                                multiplier=$((1024 * 1024 * 1024))
+                        ;;
+                        *)
+                                multiplier=1
+                        ;;
+                esac
+
+                test $multiplier -ne 1 && AC_MSG_NOTICE([Log ring size multiplier: $lastchr][B ($multiplier)])
+
+                AC_MSG_CHECKING([for the final log ring size in bytes])
+                CONFIG_LOG_RING_SIZE=$((CONFIG_LOG_RING_SIZE * multiplier))
+                AC_MSG_RESULT([$CONFIG_LOG_RING_SIZE])
+
+                AC_DEFINE_UNQUOTED([CONFIG_LOG_RING_SIZE],
+                        [$CONFIG_LOG_RING_SIZE],
+                        [Size of the in-memory log ring buffer in bytes])
+        ]);
 
 AS_IF([test "x$CONFIG_LOG_RING_MAXLINE" != "x"],
         [AC_DEFINE_UNQUOTED([CONFIG_LOG_RING_MAXLINE],
