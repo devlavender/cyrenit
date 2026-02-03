@@ -32,6 +32,11 @@ AC_ARG_ENABLE([debug],
         [CONFIG_DEBUG=yes],
         [CONFIG_DEBUG=no])
 
+AC_ARG_ENABLE([tests],
+        AS_HELP_STRING([--enable-tests], [Enable unit testing]),
+        [CONFIG_TESTS=$enableval],
+        [CONFIG_TESTS=no])
+
 AC_ARG_ENABLE([service-helloop],
         [AS_HELP_STRING([--enable-service-helloop],
                 [Build with helloop service])],
@@ -63,6 +68,7 @@ AC_ARG_WITH([log-ring-maxline],
         [CONFIG_LOG_RING_MAXLINE="120"])
 
 AC_SUBST(CONFIG_DEBUG)
+AC_SUBST(CONFIG_TESTS)
 AC_SUBST(CONFIG_SERVICE_HELLOOP)
 AC_SUBST(CONFIG_SERVICE_ORPHAN_PARTY)
 AC_SUBST(CONFIG_SERVICE_ZOMBIE_PARTY)
@@ -71,6 +77,15 @@ AC_SUBST(CONFIG_LOG_RING_MAXLINE)
 
 AS_IF([test "x$CONFIG_DEBUG" = "xyes"],
       [AC_DEFINE([CONFIG_DEBUG], [1], [Build with debug symbols and no optimizations])])
+
+AS_IF([test "x$CONFIG_TESTS" = "xyes"],
+        [
+                PKG_CHECK_MODULES([CRITERION], [criterion], [
+                        AC_DEFINE([CONFIG_TESTS], [1], [Enable unit testing])
+                ], [
+                        AC_MSG_ERROR([Criterion library not found, required for building tests])
+                ])
+        ])
 
 AS_IF([test "x$CONFIG_SERVICE_HELLOOP" = "xyes"],
       [AC_DEFINE([CONFIG_SERVICE_HELLOOP], [1], [Build with helloop service])])

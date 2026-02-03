@@ -50,7 +50,7 @@ CFLAGS := $(CFLAGS_COMMON) $(CYRENIT_CFLAGS)
 
 MAKE_VARS := $(MAKE_VARS_COMMON)
 
-all: cyrenit services lib
+all: cyrenit services lib test-dir
 
 cyrenit: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o cyrenit $(LDFLAGS)
@@ -65,6 +65,12 @@ services:
 lib:
 	$(MAKE) -C lib/ $(MAKE_VARS)
 
+test-dir:
+	$(MAKE) -C test/ $(MAKE_VARS)
+
+test: test-dir
+	$(MAKE) -C test/ $(MAKE_VARS) test
+
 IMAGE_BUILD_DIR := build/initcpio
 TARGET_IMAGE := initrd.cpio
 CYRENIT_BIN := $(CYRENIT_DEST_DIR)/cyrenit
@@ -76,6 +82,9 @@ IMAGE_LIBS := libgcc_s.so.1
 LIBDIR_SYMLINKS := /usr/lib /lib64 /usr/lib64
 ROOT_DIRS := {sbin,bin,boot,var,lib,etc,proc,sys,dev,mnt,run,usr,tmp}
 USR_DIRS := {share,libexec}
+
+tests:
+	$(MAKE) -C tests/ $(MAKE_VARS)
 
 initcpio: all scan-libs.sh
 	mkdir -p $(IMAGE_BUILD_DIR)/$(ROOT_DIRS)
