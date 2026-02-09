@@ -84,7 +84,7 @@ AC_SUBST(CONFIG_LOG_RING_MAXLINE)
 AC_SUBST(QEMU)
 
 AS_IF([test "x$CONFIG_DEBUG" = "xyes"],
-      [AC_DEFINE([CONFIG_DEBUG], [1], [Build with debug symbols and no optimizations])])
+        [AC_DEFINE([CONFIG_DEBUG], [1], [Build with debug symbols and no optimizations])])
 
 AS_IF([test "x$CONFIG_TESTS" = "xyes"],
         [
@@ -96,13 +96,13 @@ AS_IF([test "x$CONFIG_TESTS" = "xyes"],
         ])
 
 AS_IF([test "x$CONFIG_SERVICE_HELLOOP" = "xyes"],
-      [AC_DEFINE([CONFIG_SERVICE_HELLOOP], [1], [Build with helloop service])])
+        [AC_DEFINE([CONFIG_SERVICE_HELLOOP], [1], [Build with helloop service])])
 
 AS_IF([test "x$CONFIG_SERVICE_ORPHAN_PARTY" = "xyes"],
-      [AC_DEFINE([CONFIG_SERVICE_ORPHAN_PARTY], [1], [Build with orphan-party service])])
+        [AC_DEFINE([CONFIG_SERVICE_ORPHAN_PARTY], [1], [Build with orphan-party service])])
 
 AS_IF([test "x$CONFIG_SERVICE_ZOMBIE_PARTY" = "xyes"],
-      [AC_DEFINE([CONFIG_SERVICE_ZOMBIE_PARTY], [1], [Build with zombie-party service])])
+        [AC_DEFINE([CONFIG_SERVICE_ZOMBIE_PARTY], [1], [Build with zombie-party service])])
 
 AS_IF([test "x$CONFIG_LOG_RING_SIZE" != "x"],
         [
