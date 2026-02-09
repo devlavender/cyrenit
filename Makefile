@@ -156,11 +156,19 @@ QEMU_OPTS := $(QEMU_OPTS_REG)
 endif
 
 run: $(TARGET_IMAGE)
-	echo "Starting qemu with $(KERNEL) kernel, $(TARGET_IMAGE) initrd, " \
+ifeq ($(QEMU),no)
+	@echo "Running is disabled because it's either been disabled at" \
+		" configure time or the binary wasn't found in your" \
+		" system."
+	@echo "To enable running configure again provind a valid qemu" \
+		" binary using the --with-qemu option."
+else
+	@echo "Starting qemu with $(KERNEL) kernel, $(TARGET_IMAGE) initrd, " \
 		"console opts: '$(QEMU_CONSOLE_OPTS)' and kernel cmdline: $(KERNEL_CMDLINE)"
-	qemu-system-x86_64 -kernel $(KERNEL) -initrd $(TARGET_IMAGE) \
+	$(QEMU) -kernel $(KERNEL) -initrd $(TARGET_IMAGE) \
 		$(QEMU_CONSOLE_OPTS) -append "$(KERNEL_CMDLINE)" \
 		$(QEMU_OPTS)
+endif
 
 clean:
 	rm -f cyrenit *.o
@@ -172,5 +180,6 @@ clean:
 dist-clean: clean
 	rm -rf config.mk config.h config.h.in configure config.log \
 		config.status autom4te.cache configure~ config.h.in~ \
+		aclocal.m4 compile_commands.json
 
 .PHONY: all services initcpio clean run

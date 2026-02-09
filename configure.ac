@@ -67,6 +67,12 @@ AC_ARG_WITH([log-ring-maxline],
         [CONFIG_LOG_RING_MAXLINE="$withval"],
         [CONFIG_LOG_RING_MAXLINE="120"])
 
+AC_ARG_WITH([qemu],
+        [AS_HELP_STRING([--with-qemu=QEMU],
+                [Set the path to the QEMU binary for testing (default: qemu-system-x86_64)])],
+        [QEMU_CHECK="$withval"],
+        [QEMU_CHECK="qemu-system-x86_64"])
+
 AC_SUBST(CONFIG_DEBUG)
 AC_SUBST(CONFIG_TESTS)
 AC_SUBST(CONFIG_SERVICE_HELLOOP)
@@ -74,6 +80,8 @@ AC_SUBST(CONFIG_SERVICE_ORPHAN_PARTY)
 AC_SUBST(CONFIG_SERVICE_ZOMBIE_PARTY)
 AC_SUBST(CONFIG_LOG_RING_SIZE)
 AC_SUBST(CONFIG_LOG_RING_MAXLINE)
+
+AC_SUBST(QEMU)
 
 AS_IF([test "x$CONFIG_DEBUG" = "xyes"],
       [AC_DEFINE([CONFIG_DEBUG], [1], [Build with debug symbols and no optimizations])])
@@ -150,6 +158,17 @@ AS_IF([test "x$CONFIG_LOG_RING_MAXLINE" != "x"],
         [AC_DEFINE_UNQUOTED([CONFIG_LOG_RING_MAXLINE],
                 [$CONFIG_LOG_RING_MAXLINE],
                 [Maximum line size for the in-memory log ring buffer])])
+
+AC_PATH_PROG([QEMU_PATH], [$QEMU_CHECK], [no])
+AS_IF([test "x$QEMU_PATH" != "xno"],
+        [
+                AC_DEFINE_UNQUOTED([QEMU], ["$QEMU_PATH"], [Path to the QEMU binary for running cyrenit])
+                AC_MSG_NOTICE([QEMU binary $QEMU_CHECK found at $QEMU_PATH, running enabled])
+        ],
+        [
+                AC_DEFINE_UNQUOTED([QEMU], [""], [QEMU binary not found, running will be disabled])
+                AC_MSG_WARN([QEMU binary $QEMU_CHECK not found, running will be disabled])
+        ])
 
 AC_CONFIG_FILES([config.mk])
 
